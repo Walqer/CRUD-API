@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ESNext", // Версия ECMAScript
+        "module": "NodeNext", // Используем CommonJS для Node.js
+        "strict": true, // Включаем строгую типизацию
+        "esModuleInterop": true, // Позволяем использовать ES модули
+        "skipLibCheck": true, // Пропускаем проверку .d.ts файлов
+        "forceConsistentCasingInFileNames": true // Указываем на необходимость согласованного написания имен файлов
+    },
+    "include": ["src/**/*"], // Папка с вашими TypeScript файлами
+    "exclude": ["node_modules", "dist"] // Исключаем папки node_modules и dist
+}
