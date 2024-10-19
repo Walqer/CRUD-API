@@ -1,5 +1,5 @@
 import http from 'http'
-
+import { getUsers } from './user'
 const PORT = process.env.PORT || 3000
 
 const requestHandler = (
@@ -7,13 +7,15 @@ const requestHandler = (
     res: http.ServerResponse
 ) => {
     res.setHeader('Content-Type', 'application/json')
-
-    const response = {
-        message: 'Hello, World!',
-        timestamp: new Date().toISOString(),
+    const { method, url } = req
+    console.log(`Request received: ${method} ${url}`)
+    console.log('url', url)
+    if (method === 'GET' && url === '/users') {
+        const users = getUsers()
+        res.end(JSON.stringify(users))
     }
 
-    res.end(JSON.stringify(response))
+    res.end(JSON.stringify('Hi'))
 }
 
 const server = http.createServer(requestHandler)
