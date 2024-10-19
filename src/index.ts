@@ -1,13 +1,16 @@
 import http from 'http'
 import {
     createUser,
+    deleteUser,
     getUserById,
     getUsers,
     InvalidUserIdError,
     updateUser,
     UserNotFoundError,
 } from './user'
-const PORT = process.env.PORT || 3000
+import { config } from 'dotenv'
+config()
+const PORT = process.env.PORT
 
 const requestHandler = (
     req: http.IncomingMessage,
@@ -19,6 +22,7 @@ const requestHandler = (
     if (method === 'GET' && url === '/') {
         res.statusCode = 200
         res.end(JSON.stringify({ message: 'Hello world' }))
+        return
     }
 
     if (method === 'GET' && url === '/users') {
@@ -120,6 +124,34 @@ const requestHandler = (
 
         return
     }
+    if (method === 'DELETE' && url?.startsWith('/users/')) {
+        const id = url.split('/')[2]
+        try {
+            deleteUser(id)
+            res.statusCode = 204
+            res.end()
+        } catch (err) {
+            if (err instanceof InvalidUserIdError) {
+                res.statusCode = 400
+                res.end(JSON.stringify({ message: err.message }))
+            } else if (err instanceof UserNotFoundError) {
+                res.statusCode = 404
+                res.end(JSON.stringify({ message: err.message }))
+            } else {
+                res.statusCode = 500
+                res.end(
+                    JSON.stringify({
+                        message: 'An unexpected error occurred.',
+                    })
+                )
+            }
+        }
+        return
+    }
+
+    res.statusCode = 404
+    res.end(JSON.stringify({ message: 'Not Found' }))
+    return
 }
 
 const server = http.createServer(requestHandler)

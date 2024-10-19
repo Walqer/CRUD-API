@@ -14,16 +14,7 @@ export class UserNotFoundError extends Error {
         this.name = 'UserNotFoundError'
     }
 }
-const validateUser = (user: User) => {
-    const schema = {
-        type: 'object',
-        properties: {
-            age: { type: 'integer' },
-            hobbies: { type: 'array', items: { type: 'string' } },
-            username: { type: 'string' },
-        },
-    }
-}
+
 const users: User[] = []
 
 export const getUsers = () => {
@@ -62,4 +53,12 @@ export const updateUser = (id: string, data: Omit<User, 'id'>) => {
         users[userIndex] = updatedUser
         return updatedUser
     }
+}
+
+export const deleteUser = (id: string) => {
+    if (!validate(id)) throw new InvalidUserIdError('Invalid user ID format')
+    const userIndex = users.findIndex((user) => user.id === id)
+    if (userIndex === -1) throw new UserNotFoundError('User not found')
+    const [deletedUser] = users.splice(userIndex, 1)
+    return deletedUser
 }
