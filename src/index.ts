@@ -1,16 +1,17 @@
 import http from 'http'
-import {
-    createUser,
-    deleteUser,
-    getUserById,
-    getUsers,
-    InvalidUserIdError,
-    updateUser,
-    UserNotFoundError,
-} from './user'
+import { getUsers } from './user'
 import { config } from 'dotenv'
+import { handleGetUserById } from './handlers/handleGetUserById'
+import { handleCreateUser } from './handlers/handleCreateUser'
+import { handleDeleteUser } from './handlers/handleDeleteUser'
+import { handleUpdateUser } from './handlers/handleUpdateUser'
+
 config()
 const PORT = process.env.PORT
+if (!PORT) {
+    console.error('ERROR: Missing PORT environment variable.')
+    process.exit(1)
+}
 
 const requestHandler = (
     req: http.IncomingMessage,
@@ -18,144 +19,60 @@ const requestHandler = (
 ) => {
     res.setHeader('Content-Type', 'application/json')
     const { method, url } = req
-
-    if (method === 'GET' && url === '/') {
-        res.statusCode = 200
-        res.end(JSON.stringify({ message: 'Hello world' }))
-        return
-    }
-
-    if (method === 'GET' && url === '/users') {
-        const users = getUsers()
-        res.end(JSON.stringify(users))
-        return
-    }
-    if (method === 'GET' && url?.startsWith('/users/')) {
-        const id = url.split('/')[2]
-
-        try {
-            const user = getUserById(id)
-            res.end(JSON.stringify(user))
-        } catch (err) {
-            if (err instanceof InvalidUserIdError) {
-                res.statusCode = 400
-                res.end(JSON.stringify({ message: err.message }))
-            } else if (err instanceof UserNotFoundError) {
-                res.statusCode = 404
-                res.end(JSON.stringify({ message: err.message }))
+    switch (method) {
+        case 'GET':
+            if (url === '/') {
+                res.statusCode = 200
+                res.end(JSON.stringify({ message: 'Hello world' }))
+            } else if (url === '/users') {
+                const users = getUsers()
+                res.end(JSON.stringify(users))
+            } else if (url?.startsWith('/users/')) {
+                const id = url.split('/')[2]
+                handleGetUserById(id, res)
             } else {
-                res.statusCode = 500
-                res.end(
-                    JSON.stringify({ message: 'An unexpected error occurred.' })
-                )
-            }
-        }
-        return
-    }
-    if (method === 'POST' && url === '/users') {
-        let body = ''
-        req.on('data', (chunk: Buffer) => {
-            body += chunk.toString()
-        })
-        req.on('end', () => {
-            try {
-                const data = JSON.parse(body)
-                const newUser = createUser(data)
-                res.statusCode = 201
-                res.end(JSON.stringify(newUser))
-            } catch (err) {
-                if (err instanceof SyntaxError) {
-                    res.statusCode = 400
-                    res.end(
-                        JSON.stringify({
-                            message: 'Invalid request body format.',
-                        })
-                    )
-                } else if (err instanceof Error) {
-                    res.statusCode = 400
-                    res.end(JSON.stringify({ message: err.message }))
-                } else {
-                    res.statusCode = 500
-                    res.end(
-                        JSON.stringify({
-                            message: 'An unexpected error occurred.',
-                        })
-                    )
-                }
-            }
-        })
-        return
-    }
-    if (method === 'PUT' && url?.startsWith('/users/')) {
-        const id = url.split('/')[2]
-        let body = ''
-        req.on('data', (chunk: Buffer) => {
-            body += chunk.toString()
-        })
-        req.on('end', () => {
-            try {
-                const data = JSON.parse(body)
-                const updatedUser = updateUser(id, data)
-                res.end(JSON.stringify(updatedUser))
-            } catch (err) {
-                if (err instanceof SyntaxError) {
-                    res.statusCode = 400
-                    res.end(
-                        JSON.stringify({
-                            message: 'Invalid request body format.',
-                        })
-                    )
-                } else if (err instanceof InvalidUserIdError) {
-                    res.statusCode = 400
-                    res.end(JSON.stringify({ message: err.message }))
-                } else if (err instanceof UserNotFoundError) {
-                    res.statusCode = 404
-                    res.end(JSON.stringify({ message: err.message }))
-                } else {
-                    res.statusCode = 500
-                    res.end(
-                        JSON.stringify({
-                            message: 'An unexpected error occurred.',
-                        })
-                    )
-                }
-            }
-        })
-
-        return
-    }
-    if (method === 'DELETE' && url?.startsWith('/users/')) {
-        const id = url.split('/')[2]
-        try {
-            deleteUser(id)
-            res.statusCode = 204
-            res.end()
-        } catch (err) {
-            if (err instanceof InvalidUserIdError) {
-                res.statusCode = 400
-                res.end(JSON.stringify({ message: err.message }))
-            } else if (err instanceof UserNotFoundError) {
                 res.statusCode = 404
-                res.end(JSON.stringify({ message: err.message }))
-            } else {
-                res.statusCode = 500
-                res.end(
-                    JSON.stringify({
-                        message: 'An unexpected error occurred.',
-                    })
-                )
+                res.end(JSON.stringify({ message: 'Not Found' }))
             }
-        }
-        return
-    }
+            break
 
-    res.statusCode = 404
-    res.end(JSON.stringify({ message: 'Not Found' }))
-    return
+        case 'POST':
+            if (url === '/users') {
+                handleCreateUser(req, res)
+            } else {
+                res.statusCode = 404
+                res.end(JSON.stringify({ message: 'Not Found' }))
+            }
+            break
+
+        case 'PUT':
+            if (url?.startsWith('/users/')) {
+                const id = url.split('/')[2]
+                handleUpdateUser(id, req, res)
+            } else {
+                res.statusCode = 404
+                res.end(JSON.stringify({ message: 'Not Found' }))
+            }
+            break
+
+        case 'DELETE':
+            if (url?.startsWith('/users/')) {
+                const id = url.split('/')[2]
+                handleDeleteUser(id, res)
+            } else {
+                res.statusCode = 404
+                res.end(JSON.stringify({ message: 'Not Found' }))
+            }
+            break
+
+        default:
+            res.statusCode = 405
+            res.end(JSON.stringify({ message: 'Method Not Allowed' }))
+            break
+    }
 }
 
 const server = http.createServer(requestHandler)
-
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`)
 })
