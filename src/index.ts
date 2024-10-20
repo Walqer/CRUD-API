@@ -21,11 +21,12 @@ export const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
             if (url === '/') {
                 res.statusCode = 200
                 res.end(JSON.stringify({ message: 'Hello world' }))
-            } else if (url === '/users') {
+            } else if (url === '/api/users') {
                 const users = getUsers()
                 res.end(JSON.stringify(users))
-            } else if (url?.startsWith('/users/')) {
-                const id = url.split('/')[2]
+            } else if (url?.startsWith('/api/users/')) {
+                const id = url.split('/').pop()!
+                console.log(id)
                 handleGetUserById(id, res)
             } else {
                 res.statusCode = 404
@@ -34,7 +35,7 @@ export const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
             break
 
         case 'POST':
-            if (url === '/users') {
+            if (url === '/api/users') {
                 handleCreateUser(req, res)
             } else {
                 res.statusCode = 404
@@ -43,8 +44,8 @@ export const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
             break
 
         case 'PUT':
-            if (url?.startsWith('/users/')) {
-                const id = url.split('/')[2]
+            if (url?.startsWith('/api/users/')) {
+                const id = url.split('/').pop()!
                 handleUpdateUser(id, req, res)
             } else {
                 res.statusCode = 404
@@ -53,8 +54,8 @@ export const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
             break
 
         case 'DELETE':
-            if (url?.startsWith('/users/')) {
-                const id = url.split('/')[2]
+            if (url?.startsWith('/api/users/')) {
+                const id = url.split('/').pop()!
                 handleDeleteUser(id, res)
             } else {
                 res.statusCode = 404

@@ -22,55 +22,57 @@ describe('User API tests', () => {
         hobbies: ['reading', 'writing', 'coding', 'family', 'friends'],
     }
     let createdUserId: string
-    it('should return 200 and an empty array on GET /users', async () => {
-        const { status, body } = await request.get('/users')
+    it('should return 200 and an empty array on GET /api/users', async () => {
+        const { status, body } = await request.get('/api/users')
         expect(status).toBe(200)
         expect(body).toStrictEqual([])
     })
-    it('A new object is created by a POST api/users request', async () => {
-        const { status, body } = await request.post('/users').send(userData)
+    it('A new object is created by a POST api/api/users request', async () => {
+        const { status, body } = await request.post('/api/users').send(userData)
         expect(status).toBe(201)
         expect(validate(body.id)).toBe(true)
         createdUserId = body.id
         expect(body).toEqual({ id: expect.any(String), ...userData })
     })
-    it('should return user on GET /users/:id', async () => {
-        const { status, body } = await request.get(`/users/${createdUserId}`)
+    it('should return user on GET /api/users/:id', async () => {
+        const { status, body } = await request.get(
+            `/api/users/${createdUserId}`
+        )
         expect(status).toBe(200)
         expect(body).toEqual({ id: createdUserId, ...userData })
     })
-    it('should update user on PUT /users/:id', async () => {
+    it('should update user on PUT /api/users/:id', async () => {
         const { status, body } = await request
-            .put(`/users/${createdUserId}`)
+            .put(`/api/users/${createdUserId}`)
             .send(updatedUserData)
         expect(status).toBe(200)
         expect(body).toEqual({ id: createdUserId, ...updatedUserData })
     })
-    it('should delete user on DELETE /users/:id', async () => {
-        const { status } = await request.delete(`/users/${createdUserId}`)
+    it('should delete user on DELETE /api/users/:id', async () => {
+        const { status } = await request.delete(`/api/users/${createdUserId}`)
         expect(status).toBe(204)
     })
-    it('should return 404 on GET /users/:id', async () => {
-        const { status } = await request.get(`/users/${createdUserId}`)
+    it('should return 404 on GET /api/users/:id', async () => {
+        const { status } = await request.get(`/api/users/${createdUserId}`)
         expect(status).toBe(404)
     })
 })
 
 describe('Error handling', () => {
     it('should return 400 on invalid ID', async () => {
-        const { status } = await request.get('/users/123')
+        const { status } = await request.get('/api/users/123')
         expect(status).toBe(400)
     })
-    it('should return 404 on GET /users/:id', async () => {
-        const { status } = await request.get(`/users/${uuid()}`)
+    it('should return 404 on GET /api/users/:id', async () => {
+        const { status } = await request.get(`/api/users/${uuid()}`)
         expect(status).toBe(404)
     })
-    it('should return 404 on DELETE /users/:id', async () => {
-        const { status } = await request.delete(`/users/${uuid()}`)
+    it('should return 404 on DELETE /api/users/:id', async () => {
+        const { status } = await request.delete(`/api/users/${uuid()}`)
         expect(status).toBe(404)
     })
-    it('should return 404 on PUT /users/:id', async () => {
-        const { status } = await request.put(`/users/${uuid()}`).send({
+    it('should return 404 on PUT /api/users/:id', async () => {
+        const { status } = await request.put(`/api/users/${uuid()}`).send({
             id: uuid(),
             username: 'John Doe',
             age: 30,
@@ -78,8 +80,8 @@ describe('Error handling', () => {
         })
         expect(status).toBe(404)
     })
-    it('should return 400 on POST /users with invalid data', async () => {
-        const { status } = await request.post('/users').send({
+    it('should return 400 on POST /api/users with invalid data', async () => {
+        const { status } = await request.post('/api/users').send({
             username: 'John Doe',
             age: '30',
             hobbies: ['reading', 'writing'],
@@ -98,29 +100,27 @@ describe('Table tests', () => {
         ),
     }))
     const randomUsersWithId: (typeof randomUsers & { id: string })[] = []
-    it('should create users from list', async () => {
-        for (const user of randomUsers) {
-            const { status, body } = await request.post('/users').send(user)
-            expect(status).toBe(201)
-            randomUsersWithId.push(body)
-        }
+    it.each(randomUsers)('should create user with %j', async (user) => {
+        const { status, body } = await request.post('/api/users').send(user)
+        expect(status).toBe(201)
+        randomUsersWithId.push(body)
     })
 
     it('should get all users', async () => {
-        const { status, body } = await request.get('/users')
+        const { status, body } = await request.get('/api/users')
         expect(status).toBe(200)
         expect(body).toEqual(randomUsersWithId)
     })
 
     it('should delete all users', async () => {
         for (const user of randomUsersWithId) {
-            const { status } = await request.delete(`/users/${user.id}`)
+            const { status } = await request.delete(`/api/users/${user.id}`)
             expect(status).toBe(204)
         }
     })
 
     it('should get all users', async () => {
-        const { status, body } = await request.get('/users')
+        const { status, body } = await request.get('/api/users')
         expect(status).toBe(200)
         expect(body).toEqual([])
     })
