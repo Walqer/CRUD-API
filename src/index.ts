@@ -1,4 +1,4 @@
-import http from 'http'
+import { createServer, IncomingMessage, ServerResponse } from 'http'
 import { getUsers } from './user'
 import { config } from 'dotenv'
 import { handleGetUserById } from './handlers/handleGetUserById'
@@ -13,10 +13,7 @@ if (!PORT) {
     process.exit(1)
 }
 
-const requestHandler = (
-    req: http.IncomingMessage,
-    res: http.ServerResponse
-) => {
+export const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
     res.setHeader('Content-Type', 'application/json')
     const { method, url } = req
     switch (method) {
@@ -72,7 +69,7 @@ const requestHandler = (
     }
 }
 
-const server = http.createServer(requestHandler)
+export const server = createServer(requestHandler)
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`)
 })
