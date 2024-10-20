@@ -5,7 +5,8 @@
     "scripts": {
         "build": "webpack --config webpack.config.js",
         "start:prod": "npm run build && node dist/bundle.js",
-        "start:dev": "nodemon --exec ts-node src/index.ts"
+        "start:dev": "nodemon --exec ts-node src/index.ts",
+        "start:multi": "nodemon --exec ts-node src/multi.ts"
     },
     "keywords": [],
     "author": "",

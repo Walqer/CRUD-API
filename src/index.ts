@@ -71,6 +71,8 @@ export const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
 }
 
 export const server = createServer(requestHandler)
-server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`)
-})
+if (require.main === module) {
+    server.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`)
+    })
+}
