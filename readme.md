@@ -1,25 +1,25 @@
 # API
 
-## Описание
+## Description
 
-Это API, реализующее CRUD операции для управления пользователями. Оно поддерживает кластеризацию и может работать в многопоточном режиме.
+This is an API that implements CRUD operations for user management. It supports clustering and can work in multi-threaded mode.
 
-## Установка
+## Installation
 
-1. **Клонируйте репозиторий:**
+1. **Clone the repository:**
 
     ```bash
     git clone https://github.com/Walqer/api.git
     cd api
     ```
 
-2. **Установите зависимости:**
+2. **Set dependencies:**
    `npm install`
-3. **Запуск в режиме разработки**
+3. **Start in development mode**
    `npm run start:dev`
-4. **Запуск в режиме продакшена**
+4. **Run in production mode**
    `npm run start:prod`
-5. **Запуск в многопоточном режиме**
+5. **Multithreaded startup**
    `npm run start:multi`
-6. **Сборка без запуска**
+6. **Build without starting**
    `npm run build`
